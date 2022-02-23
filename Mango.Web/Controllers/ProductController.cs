@@ -17,7 +17,7 @@ namespace Mango.Web.Controllers
             var list = new List<ProductDto>();
             var response = await service.GetAllProductAsync<ResponseDto>();
 
-            if(response!=null && response.IsSuccess)
+            if (response != null && response.IsSuccess)
             {
                 list = JsonConvert.DeserializeObject<List<ProductDto>>(Convert.ToString(response.Result));
             }
@@ -70,6 +70,37 @@ namespace Mango.Web.Controllers
                 var response = await service.UpdateProductAsync<ResponseDto>(model);
 
                 if (response != null && response.IsSuccess)
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> Delete(int productId)
+        {
+            var response = await service.GetProductbyIdAsync<ResponseDto>(productId);
+
+            if (response != null && response.IsSuccess)
+            {
+                ProductDto product = JsonConvert.DeserializeObject<ProductDto>(Convert.ToString(response.Result));
+
+                return View(product);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(ProductDto model)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await service.DeleteProductAsync<ResponseDto>(model.ProductId);
+
+                if (response.IsSuccess)
                 {
                     return RedirectToAction(nameof(Index));
                 }
